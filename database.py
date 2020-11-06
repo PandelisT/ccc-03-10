@@ -1,13 +1,21 @@
-import psycopg2
+from flask_sqlalchemy import SQLAlchemy
 
-connection = psycopg2.connect(
-    database="library_api",
-    user="app",
-    password="app",
-    host="localhost"
-)
+def init_db(app):
+    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://postgres:postgres@localhost:5432/library_api"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    db = SQLAlchemy(app) # new instance of db connection
+    return db
 
-cursor = connection.cursor()
+# import psycopg2
 
-cursor.execute("create table if not exists books (id serial PRIMARY KEY, title varchar);")
-connection.commit()
+# connection = psycopg2.connect(
+#     database="library_api",
+#     user="app",
+#     password="app", os.getenv("db_password")
+#     host="localhost"
+# )
+
+# cursor = connection.cursor()
+
+# cursor.execute("create table if not exists books (id serial PRIMARY KEY, title varchar);")
+# connection.commit()
