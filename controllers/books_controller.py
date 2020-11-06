@@ -1,13 +1,46 @@
 from models.Book import Book
 from main import db
 from flask import Blueprint, request, jsonify
+from schemas.BookSchema import books_schema
 books = Blueprint("books", __name__, url_prefix="/books")
 
 
 @books.route("/", methods=["GET"])
 def book_index():
     #Return all books
-    pass
+    books = Book.query.all()
+    serialised_data = books_schema.dump(books)
+    return jsonify(serialised_data)
+
+    # books_list = []
+    # for book in books:
+    #     books_list.append({
+    #         "id" : book.id,
+    #         "title" : book.title
+    #     })
+
+    # raw_data = [
+    #     {
+    #     "id": 1,
+    #     "title": "New title"
+    #     },
+    #     {
+    #     "id": 2,
+    #     "title": "testing"
+    #     },
+    #     {
+    #     "id": 3,
+    #     "title": "ABC"
+    #     }
+    #     ]
+    
+    # for book in raw_data:
+    #     new_book = Book()
+    #     new_book.id = book["id"]
+    #     new_book.title = book["title"]
+    #     books_list.append(new_book)
+
+    
 
 # @books.route("/", methods=["POST"])
 # def book_create():
