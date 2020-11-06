@@ -1,7 +1,7 @@
 from models.Book import Book
 from main import db
 from flask import Blueprint, request, jsonify
-from schemas.BookSchema import books_schema
+from schemas.BookSchema import books_schema, book_schema
 books = Blueprint("books", __name__, url_prefix="/books")
 
 
@@ -12,77 +12,39 @@ def book_index():
     serialised_data = books_schema.dump(books)
     return jsonify(serialised_data)
 
-    # books_list = []
-    # for book in books:
-    #     books_list.append({
-    #         "id" : book.id,
-    #         "title" : book.title
-    #     })
+@books.route("/", methods=["POST"])
+def book_create():
+    #Create a new book
+    book_fields = book_schema.load(request.json)
+    new_book = Book()
+    new_book.title = book_fields["title"]
 
-    # raw_data = [
-    #     {
-    #     "id": 1,
-    #     "title": "New title"
-    #     },
-    #     {
-    #     "id": 2,
-    #     "title": "testing"
-    #     },
-    #     {
-    #     "id": 3,
-    #     "title": "ABC"
-    #     }
-    #     ]
-    
-    # for book in raw_data:
-    #     new_book = Book()
-    #     new_book.id = book["id"]
-    #     new_book.title = book["title"]
-    #     books_list.append(new_book)
+    db.session.add(new_book)
+    db.session.commit()
 
-    
+    return jsonify(book_schema.dump(new_book))
 
-# @books.route("/", methods=["POST"])
-# def book_create():
-#     #Create a new book
-#     sql = "INSERT INTO books (title) VALUES (%s);"
-#     cursor.execute(sql, (request.json["title"],))
-#     connection.commit()
+@books.route("/<int:id>", methods=["GET"])
+def book_show(id):
+    #Return a single book
+    book = Book.query.get(id)
+    return jsonify(book_schema.dump(book))
 
-#     sql = "SELECT * FROM books ORDER BY ID DESC LIMIT 1"
-#     cursor.execute(sql)
-#     book = cursor.fetchone()
-#     return jsonify(book)
+@books.route("/<int:id>", methods=["PUT", "PATCH"])
+def book_update(id):
+    #Update a book
+    books = Book.query.filter_by(id=id)
+    book_fields = book_schema.load(request.json)
+    books.update(book_fields)
+    db.session.commit()
+    return jsonify(book_schema.dump(books[0]))
 
-# @books.route("/<int:id>", methods=["GET"])
-# def book_show(id):
-#     #Return a single book
-#     sql = "SELECT * FROM books WHERE id = %s;"
-#     cursor.execute(sql, (id,))
-#     book = cursor.fetchone()
-#     return jsonify(book)
+@books.route("/<int:id>", methods=["DELETE"])
+def book_delete(id):
+    book = Book.query.get(id)
+    if not book:
+        return "deleted"
+    db.session.delete(book)
+    db.session.commit()
 
-# @books.route("/<int:id>", methods=["PUT", "PATCH"])
-# def book_update(id):
-#     #Update a book
-#     sql = "UPDATE books SET title = %s WHERE id = %s;"
-#     cursor.execute(sql, (request.json["title"], id))
-#     connection.commit()
-
-#     sql = "SELECT * FROM books WHERE id = %s"
-#     cursor.execute(sql, (id,))
-#     book = cursor.fetchone()
-#     return jsonify(book)
-
-# @books.route("/<int:id>", methods=["DELETE"])
-# def book_delete(id):
-#     sql = "SELECT * FROM books WHERE id = %s;"
-#     cursor.execute(sql, (id,))
-#     book = cursor.fetchone()
-    
-#     if book:
-#         sql = "DELETE FROM books WHERE id = %s;"
-#         cursor.execute(sql, (id,))
-#         connection.commit()
-
-#     return jsonify(book)
+    return jsonify(book_schema.dump(book))
