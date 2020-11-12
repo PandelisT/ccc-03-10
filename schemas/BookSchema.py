@@ -1,6 +1,6 @@
 from main import ma
 from models.Book import Book
-from marshmallow.validate import length
+from marshmallow.validate import Length
 class BookSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Book
