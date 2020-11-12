@@ -4,27 +4,33 @@ load_dotenv()
 
 # Flask application creation
 from flask import Flask, jsonify
-app = Flask(__name__)
-app.config.from_object("default_settings.app_config")
-
-# Database connection
-from database import init_db
-db = init_db(app)
-
-# Set up serialisation and deserilaisation
+from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-ma = Marshmallow(app)
 
-from commands import db_commands
-app.register_blueprint(db_commands)
+# used in other files
+db = SQLAlchemy()
+ma = Marshmallow()
 
-#Controller registration
-from controllers import registerable_controllers
-for controller in registerable_controllers:
-    app.register_blueprint(controller)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object("default_settings.app_config")
 
-# error handler for bad request (e.g. no title included in post request)
-from marshmallow.exceptions import ValidationError
-@app.errorhandler(ValidationError)
-def handle_bad_request(error):
-    return (jsonify(error.messages), 400)
+    # register db and marshmallow on app
+    db.init_app(app)
+    ma.init_app(app)
+
+    from commands import db_commands
+    app.register_blueprint(db_commands)
+
+    #Controller registration
+    from controllers import registerable_controllers
+    for controller in registerable_controllers:
+        app.register_blueprint(controller)
+
+    # error handler for bad request (e.g. no title included in post request)
+    from marshmallow.exceptions import ValidationError
+    @app.errorhandler(ValidationError)
+    def handle_bad_request(error):
+        return (jsonify(error.messages), 400)
+
+    return app
