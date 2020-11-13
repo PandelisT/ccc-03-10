@@ -3,6 +3,7 @@ from main import db
 from flask import Blueprint, request, jsonify
 from schemas.BookSchema import books_schema, book_schema
 books = Blueprint("books", __name__, url_prefix="/books")
+from flask_jwt_extended import jwt_required
 
 
 @books.route("/", methods=["GET"])
@@ -13,6 +14,7 @@ def book_index():
     return jsonify(serialised_data)
 
 @books.route("/", methods=["POST"])
+@jwt_required
 def book_create():
     #Create a new book
     book_fields = book_schema.load(request.json)
@@ -31,6 +33,7 @@ def book_show(id):
     return jsonify(book_schema.dump(book))
 
 @books.route("/<int:id>", methods=["PUT", "PATCH"])
+@jwt_required
 def book_update(id):
     #Update a book
     books = Book.query.filter_by(id=id)
@@ -40,6 +43,7 @@ def book_update(id):
     return jsonify(book_schema.dump(books[0]))
 
 @books.route("/<int:id>", methods=["DELETE"])
+@jwt_required
 def book_delete(id):
     book = Book.query.get(id)
     if not book:
