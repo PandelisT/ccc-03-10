@@ -19,7 +19,7 @@ def book_index():
 @books.route("/", methods=["POST"])
 @jwt_required
 @verify_user
-def book_create():
+def book_create(user=None):
     #Create a new book
     book_fields = book_schema.load(request.json)
 
@@ -41,7 +41,7 @@ def book_show(id):
 @books.route("/<int:id>", methods=["PUT", "PATCH"])
 @jwt_required
 @verify_user
-def book_update(id):
+def book_update(id, user=None):
     #Update a book
     book_fields = book_schema.load(request.json)
 
@@ -58,7 +58,7 @@ def book_update(id):
 @books.route("/<int:id>", methods=["DELETE"])
 @jwt_required
 @verify_user
-def book_delete(id):
+def book_delete(id, user=None):
     book = Book.query.filter_by(id=id, user_id=user.id).first()
 
     if not book:
